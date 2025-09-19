@@ -1,0 +1,106 @@
+#include <iostream>
+
+using namespace std;
+
+struct Product {
+    int first;    // калорийность 100 г продукта
+    double second; // масса продукта в килограммах
+
+    void init(int calories, double mass) {
+        if (calories <= 0 || mass <= 0) {
+            cout << "Ошибка: значения должны быть положительными!" << endl;
+            exit(1);
+        }
+        first = calories;
+        second = mass;
+    }
+
+    void read() {
+        cout << "Введите калорийность 100 г продукта: ";
+        cin >> first;
+        cout << "Введите массу продукта в кг: ";
+        cin >> second;
+
+        if (first <= 0 || second <= 0) {
+            cout << "Ошибка: значения должны быть положительными!" << endl;
+            exit(1);
+        }
+    }
+
+    void display() const {
+        cout << "Калорийность 100 г: " << first << " ккал" << endl;
+        cout << "Масса продукта: " << second << " кг" << endl;
+        cout << "Общая калорийность: " << power() << " ккал" << endl;
+    }
+
+    double power() const {
+        return (first * second * 10); // first * (second * 1000 / 100)
+    }
+};
+
+// Внешняя функция для создания структуры
+Product make_Product(int calories, double mass) {
+    if (calories <= 0 || mass <= 0) {
+        cout << "Ошибка в make_Product(): значения должны быть положительными!" << endl;
+        exit(1);
+    }
+
+    Product p;
+    p.init(calories, mass);
+    return p;
+}
+
+int main() {
+    cout << "Лабораторная работа 1" << "\n" << endl;
+    cout << "___Демонстрация работы со структурой Product___" << endl << endl;
+
+
+    cout << "1. Создание объекта с прямой инициализацией:" << endl;
+    Product p1;
+    p1.init(120, 2.5);
+    p1.display();
+    cout << endl;
+
+    cout << "2. Создание объекта через make_Product():" << endl;
+    Product p2 = make_Product(85, 1.8);
+    p2.display();
+    cout << endl;
+
+    cout << "3. Создание объекта с вводом данных:" << endl;
+    Product p3;
+    p3.read();
+    p3.display();
+    cout << endl;
+
+    // Создание массива объектов
+    cout << "4. Создание и работа с массивом объектов:" << endl;
+    const int SIZE = 3;
+    Product products[SIZE];
+
+    products[0].init(100, 1.0);
+    products[1].init(150, 0.5);
+    products[2].init(200, 2.0);
+
+    for (int i = 0; i < SIZE; i++) {
+        cout << "Продукт " << i + 1 << ":" << endl;
+        products[i].display();
+        cout << endl;
+    }
+
+    // Демонстрация работы метода power()
+    cout << "5. Демонстрация метода power():" << endl;
+    cout << "Общая калорийность p1: " << p1.power() << " ккал" << endl;
+    cout << "Общая калорийность p2: " << p2.power() << " ккал" << endl;
+    cout << "Общая калорийность p3: " << p3.power() << " ккал" << endl;
+    cout << endl;
+
+    // Тестирование обработки ошибок
+    /*
+    cout << "6. Тестирование обработки ошибок:" << endl;
+    // Product error1 = make_Product(-100, 1.0); // Ошибка!
+    // Product error2; error2.init(100, -1.0);   // Ошибка!
+    */
+
+    cout << "Программа завершена успешно!" << endl;
+    return 0;
+}
