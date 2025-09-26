@@ -1,0 +1,176 @@
+#include <iostream>
+#include <cmath>
+#include <string>
+
+using namespace std;
+static const long double PI = 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481;
+struct Angle {
+    int degrees;    // Градусы
+    int minutes;    // Минуты
+};
+
+void normalizeAngle(Angle& angle) {
+    angle.degrees += angle.minutes / 60;
+    angle.minutes = angle.minutes % 60;
+
+    if (angle.minutes < 0) {
+        angle.minutes += 60;
+        angle.degrees -= 1;
+    }
+
+    angle.degrees = angle.degrees % 360;
+    if (angle.degrees < 0) {
+        angle.degrees += 360;
+    }
+}
+
+// Метод инициализации
+void init(Angle& angle, int deg = 0, int min = 0) {
+    angle.degrees = deg;
+    angle.minutes = min;
+    normalizeAngle(angle);
+}
+
+void read(Angle& angle) {
+    cout << "Введите градусы: ";
+    cin >> angle.degrees;
+    cout << "Введите минуты: ";
+    cin >> angle.minutes;
+    normalizeAngle(angle);
+}
+
+void display(const Angle& angle) {
+    cout << angle.degrees << "° " << angle.minutes << "'";
+}
+
+// Преобразование в строку
+string toString(const Angle& angle) {
+    return to_string(angle.degrees) + "° " + to_string(angle.minutes) + "'";
+}
+
+// Перевод в радианы
+double toRadians(const Angle& angle) {
+    double totalDegrees = angle.degrees + angle.minutes / 60.0;
+    return totalDegrees * PI / 180.0;
+}
+
+// Приведение к диапазону 0 ÷ 360
+Angle normalizeAngleCopy(const Angle& angle) {
+    Angle result = angle;
+    normalizeAngle(result);
+    return result;
+}
+
+// Увеличение угла на заданную величину
+Angle increaseAngle(const Angle& angle, int deg, int min) {
+    Angle result;
+    result.degrees = angle.degrees + deg;
+    result.minutes = angle.minutes + min;
+    normalizeAngle(result);
+    return result;
+}
+
+// Уменьшение угла на заданную величину
+Angle decreaseAngle(const Angle& angle, int deg, int min) {
+    Angle result;
+    result.degrees = angle.degrees - deg;
+    result.minutes = angle.minutes - min;
+    normalizeAngle(result);
+    return result;
+}
+
+// Получение синуса угла
+double getSine(const Angle& angle) {
+    return sin(toRadians(angle));
+}
+
+// Сравнение углов на равенство
+bool areEqual(const Angle& angle1, const Angle& angle2) {
+    return angle1.degrees == angle2.degrees &&
+        angle1.minutes == angle2.minutes;
+}
+
+// Сравнение: больше
+bool isGreater(const Angle& angle1, const Angle& angle2) {
+    double total1 = angle1.degrees + angle1.minutes / 60.0;
+    double total2 = angle2.degrees + angle2.minutes / 60.0;
+    return total1 > total2;
+}
+
+// Сравнение: меньше
+bool isLess(const Angle& angle1, const Angle& angle2) {
+    double total1 = angle1.degrees + angle1.minutes / 60.0;
+    double total2 = angle2.degrees + angle2.minutes / 60.0;
+    return total1 < total2;
+}
+
+int main() {
+    Angle angle1, angle2, angle3;
+
+    cout << "=== Демонстрация работы с углами ===\n\n";
+
+    cout << "1. Инициализация углов:\n";
+    init(angle1, 45, 30);
+    init(angle2, 400, 75); 
+
+    cout << "Угол 1: ";
+    display(angle1);
+    cout << "\nУгол 2: ";
+    display(angle2);
+    cout << "\n\n";
+
+  
+    cout << "2. Ввод угла с клавиатуры:\n";
+    read(angle3);
+    cout << "Введенный угол: " << toString(angle3) << "\n\n";
+
+ 
+    cout << "3. Перевод в радианы:\n";
+    cout << "Угол 1 в радианах: " << toRadians(angle1) << "\n";
+    cout << "Угол 2 в радианах: " << toRadians(angle2) << "\n\n";
+
+   
+    cout << "4. Синусы углов:\n";
+    cout << "sin(угол 1) = " << getSine(angle1) << "\n";
+    cout << "sin(угол 2) = " << getSine(angle2) << "\n\n";
+
+    cout << "5. Операции с углами:\n";
+    Angle increased = increaseAngle(angle1, 30, 45);
+    Angle decreased = decreaseAngle(angle1, 10, 15);
+
+    cout << "Угол 1: " << toString(angle1) << "\n";
+    cout << "Угол 1 + 30°45': " << toString(increased) << "\n";
+    cout << "Угол 1 - 10°15': " << toString(decreased) << "\n\n";
+
+    // Нормализация угла (копии)
+    cout << "6. Нормализация угла:\n";
+    Angle testAngle;
+    init(testAngle, -45, -30);
+    cout << "Исходный угол: " << toString(testAngle) << "\n";
+    Angle normalized = normalizeAngleCopy(testAngle);
+    cout << "После нормализации: " << toString(normalized) << "\n\n";
+
+    // Сравнение углов
+    cout << "7. Сравнение углов:\n";
+    cout << "Угол 1: " << toString(angle1) << "\n";
+    cout << "Угол 2: " << toString(angle2) << "\n";
+    cout << "Углы равны: " << (areEqual(angle1, angle2) ? "да" : "нет") << "\n";
+    cout << "Угол 1 > Угол 2: " << (isGreater(angle1, angle2) ? "да" : "нет") << "\n";
+    cout << "Угол 1 < Угол 2: " << (isLess(angle1, angle2) ? "да" : "нет") << "\n\n";
+
+  
+    cout << "8. Дополнительные тесты:\n";
+    Angle angle4;
+    init(angle4, 720, 90); // 720°90' = 721°30' = 1°30'
+    cout << "720°90' после нормализации: ";
+    display(angle4);
+    cout << "\n";
+
+    Angle angle5;
+    init(angle5, -90, -45); // -90°-45' = -91°15' = 268°45'
+    cout << "-90°-45' после нормализации: ";
+    display(angle5);
+    cout << "\n";
+
+    return 0;
+}
