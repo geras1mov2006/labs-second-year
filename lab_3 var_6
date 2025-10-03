@@ -1,0 +1,235 @@
+#include <iostream>
+#include <cmath>
+#include <string>
+
+using namespace std;
+static const long double PI = 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481;
+
+class Angle {
+private:
+    int degrees;    // Градусы
+    int minutes;    // Минуты
+
+    void normalize();
+
+public:
+    Angle();  // Конструктор без аргументов
+    Angle(int deg, int min);  // Конструктор инициализации
+    Angle(const Angle& other);  // Конструктор копирования
+
+    void read();
+    void display() const;
+    string toString() const;
+    double toRadians() const;
+    double getSine() const;
+    Angle increase(int deg, int min) const;
+    Angle decrease(int deg, int min) const;
+    Angle getNormalized() const;
+    bool isEqual(const Angle& other) const;
+    bool isGreater(const Angle& other) const;
+    bool isLess(const Angle& other) const;
+    int getDegrees() const;
+    int getMinutes() const;
+};
+
+void Angle::normalize() {
+    degrees += minutes / 60;
+    minutes = minutes % 60;
+
+    if (minutes < 0) {
+        minutes += 60;
+        degrees -= 1;
+    }
+    degrees = degrees % 360;
+    if (degrees < 0) {
+        degrees += 360;
+    }
+}
+
+Angle::Angle() {
+    degrees = 0;
+    minutes = 0;
+}
+
+Angle::Angle(int deg, int min) {
+    degrees = deg;
+    minutes = min;
+    normalize();
+}
+
+Angle::Angle(const Angle& other) {
+    degrees = other.degrees;
+    minutes = other.minutes;
+    // normalize() не нужен, так как other уже нормализован
+}
+
+void Angle::read() {
+    cout << "Введите градусы: ";
+    cin >> degrees;
+    cout << "Введите минуты: ";
+    cin >> minutes;
+    normalize();
+}
+
+void Angle::display() const {
+    cout << degrees << "° " << minutes << "'";
+}
+
+string Angle::toString() const {
+    return to_string(degrees) + "° " + to_string(minutes) + "'";
+}
+
+double Angle::toRadians() const {
+    double totalDegrees = degrees + minutes / 60.0;
+    return totalDegrees * PI / 180.0;
+}
+
+double Angle::getSine() const {
+    return sin(toRadians());
+}
+
+Angle Angle::increase(int deg, int min) const {
+    Angle result;
+    result.degrees = degrees + deg;
+    result.minutes = minutes + min;
+    result.normalize();
+    return result;
+}
+
+Angle Angle::decrease(int deg, int min) const {
+    Angle result;
+    result.degrees = degrees - deg;
+    result.minutes = minutes - min;
+    result.normalize();
+    return result;
+}
+
+Angle Angle::getNormalized() const {
+    Angle result;
+    result.degrees = degrees;
+    result.minutes = minutes;
+    result.normalize();
+    return result;
+}
+
+bool Angle::isEqual(const Angle& other) const {
+    return degrees == other.degrees && minutes == other.minutes;
+}
+
+bool Angle::isGreater(const Angle& other) const {
+    double total1 = degrees + minutes / 60.0;
+    double total2 = other.degrees + other.minutes / 60.0;
+    return total1 > total2;
+}
+
+bool Angle::isLess(const Angle& other) const {
+    double total1 = degrees + minutes / 60.0;
+    double total2 = other.degrees + other.minutes / 60.0;
+    return total1 < total2;
+}
+
+int Angle::getDegrees() const {
+    return degrees;
+}
+
+int Angle::getMinutes() const {
+    return minutes;
+}
+
+int main() {
+    cout << "Демонстрация работы с углами\n\n";
+
+    cout << "1. Различные способы создания объектов:\n";
+
+    Angle angle1;
+    cout << "Конструктор без аргументов: ";
+    angle1.display();
+    cout << "\n";
+
+    Angle angle2(45, 30);
+    cout << "Конструктор инициализации (45, 30): ";
+    angle2.display();
+    cout << "\n";
+
+    Angle angle3(400, 75);
+    cout << "Конструктор инициализации (400, 75): ";
+    angle3.display();
+    cout << "\n";
+
+    Angle angle4(angle2);
+    cout << "Конструктор копирования (из angle2): ";
+    angle4.display();
+    cout << "\n\n";
+
+    cout << "2. Создание массива объектов:\n";
+    // Массив объектов с разными конструкторами
+    Angle angles[5] = {
+        Angle(),           
+        Angle(90, 0),      
+        Angle(180, 45),    
+        Angle(270, 30),    
+        Angle(angle3)      
+    };
+
+    for (int i = 0; i < 5; i++) {
+        cout << "angles[" << i << "] = ";
+        angles[i].display();
+        cout << "\n";
+    }
+    cout << "\n";
+
+    cout << "3. Ввод угла с клавиатуры:\n";
+    Angle angle5;
+    angle5.read();
+    cout << "Введенный угол: " << angle5.toString() << "\n\n";
+
+    cout << "4. Перевод в радианы:\n";
+    cout << "Угол 2 в радианах: " << angle2.toRadians() << "\n";
+    cout << "Угол 3 в радианах: " << angle3.toRadians() << "\n\n";
+
+    cout << "5. Синусы углов:\n";
+    cout << "sin(угол 2) = " << angle2.getSine() << "\n";
+    cout << "sin(угол 3) = " << angle3.getSine() << "\n\n";
+
+    cout << "6. Операции с углами:\n";
+    Angle increased = angle2.increase(30, 45);
+    Angle decreased = angle2.decrease(10, 15);
+
+    cout << "Угол 2: " << angle2.toString() << "\n";
+    cout << "Угол 2 + 30°45': " << increased.toString() << "\n";
+    cout << "Угол 2 - 10°15': " << decreased.toString() << "\n\n";
+
+    cout << "7. Нормализация угла:\n";
+    Angle testAngle(-45, -30);
+    cout << "Исходный угол: " << testAngle.toString() << "\n";
+    Angle normalized = testAngle.getNormalized();
+    cout << "После нормализации: " << normalized.toString() << "\n\n";
+
+    cout << "8. Сравнение углов:\n";
+    cout << "Угол 2: " << angle2.toString() << "\n";
+    cout << "Угол 3: " << angle3.toString() << "\n";
+    cout << "Углы равны: " << (angle2.isEqual(angle3) ? "да" : "нет") << "\n";
+    cout << "Угол 2 > Угол 3: " << (angle2.isGreater(angle3) ? "да" : "нет") << "\n";
+    cout << "Угол 2 < Угол 3: " << (angle2.isLess(angle3) ? "да" : "нет") << "\n\n";
+
+    cout << "9. Дополнительные тесты с конструкторами:\n";
+    Angle angle6(720, 90); // 720°90' = 721°30' = 1°30'
+    cout << "Конструктор (720, 90): ";
+    angle6.display();
+    cout << "\n";
+
+    Angle angle7(-90, -45); // -90°-45' = -91°15' = 268°45'
+    cout << "Конструктор (-90, -45): ";
+    angle7.display();
+    cout << "\n";
+
+    cout << "\n10. Демонстрация работы с массивом (копирование):\n";
+    Angle copiedAngles[3] = { angle6, angle7, Angle(angle2) };
+    for (int i = 0; i < 3; i++) {
+        cout << "copiedAngles[" << i << "] = ";
+        copiedAngles[i].display();
+        cout << "\n";
+    }
+
+    return 0;
+}
