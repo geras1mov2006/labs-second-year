@@ -118,7 +118,7 @@ void demonstratePrincipleOfSubstitution(const Triad& triad) {
 }
 
 int main() {
-    cout << "=== Демонстрация работы с Triad и Triangle ===\n\n";
+    cout << "Демонстрация работы с Triad и Triangle\n\n";
 
     cout << "1. Создание объектов Triad:\n";
     Triad triad1;
