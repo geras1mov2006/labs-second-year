@@ -14,6 +14,12 @@ public:
     Triad(const Triad& other);
     virtual ~Triad();
 
+    // Методы изменения полей
+    void setA(double value);
+    void setB(double value);
+    void setC(double value);
+    void setAll(double a, double b, double c);
+
     double sum() const;
     virtual string toString() const;
     virtual void display() const;
@@ -58,6 +64,41 @@ Triad::Triad(const Triad& other) {
 }
 
 Triad::~Triad() {}
+
+// Методы изменения полей Triad
+void Triad::setA(double value) {
+    if (value <= 0) {
+        cerr << "Ошибка: число должно быть положительным!" << endl;
+        return;
+    }
+    a = value;
+}
+
+void Triad::setB(double value) {
+    if (value <= 0) {
+        cerr << "Ошибка: число должно быть положительным!" << endl;
+        return;
+    }
+    b = value;
+}
+
+void Triad::setC(double value) {
+    if (value <= 0) {
+        cerr << "Ошибка: число должно быть положительным!" << endl;
+        return;
+    }
+    c = value;
+}
+
+void Triad::setAll(double a, double b, double c) {
+    if (a <= 0 || b <= 0 || c <= 0) {
+        cerr << "Ошибка: все числа должны быть положительными!" << endl;
+        return;
+    }
+    this->a = a;
+    this->b = b;
+    this->c = c;
+}
 
 double Triad::sum() const {
     return a + b + c;
