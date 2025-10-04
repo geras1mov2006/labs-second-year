@@ -1,0 +1,193 @@
+#include <iostream>
+#include <cmath>
+#include <string>
+
+using namespace std;
+
+class Triad {
+protected:
+    double a, b, c;
+
+public:
+    Triad();
+    Triad(double a, double b, double c);
+    Triad(const Triad& other);
+    virtual ~Triad();
+
+    double sum() const;
+    virtual string toString() const;
+    virtual void display() const;
+};
+
+class Triangle : public Triad {
+public:
+    Triangle();
+    Triangle(double side1, double side2, double side3);
+    Triangle(const Triangle& other);
+
+    double getAngleA() const;
+    double getAngleB() const;
+    double getAngleC() const;
+    double getArea() const;
+
+    string toString() const override;
+    void display() const override;
+};
+
+// Реализация методов Triad
+Triad::Triad() {
+    a = 1;
+    b = 1;
+    c = 1;
+}
+
+Triad::Triad(double a, double b, double c) {
+    if (a <= 0 || b <= 0 || c <= 0) {
+        cerr << "Ошибка: все числа должны быть положительными!" << endl;
+        exit(1);
+    }
+    this->a = a;
+    this->b = b;
+    this->c = c;
+}
+
+Triad::Triad(const Triad& other) {
+    a = other.a;
+    b = other.b;
+    c = other.c;
+}
+
+Triad::~Triad() {}
+
+double Triad::sum() const {
+    return a + b + c;
+}
+
+string Triad::toString() const {
+    return "(" + to_string(a) + ", " + to_string(b) + ", " + to_string(c) + ")";
+}
+
+void Triad::display() const {
+    cout << toString() << endl;
+}
+
+// Реализация методов Triangle
+Triangle::Triangle() : Triad(3, 4, 5) {}
+
+Triangle::Triangle(double side1, double side2, double side3) : Triad(side1, side2, side3) {
+    if ((a + b <= c) || (a + c <= b) || (b + c <= a)) {
+        cerr << "Ошибка: стороны не образуют треугольник!" << endl;
+        exit(1);
+    }
+}
+
+Triangle::Triangle(const Triangle& other) : Triad(other) {}
+
+double Triangle::getAngleA() const {
+    return acos((b * b + c * c - a * a) / (2 * b * c)) * 180 / M_PI;
+}
+
+double Triangle::getAngleB() const {
+    return acos((a * a + c * c - b * b) / (2 * a * c)) * 180 / M_PI;
+}
+
+double Triangle::getAngleC() const {
+    return acos((a * a + b * b - c * c) / (2 * a * b)) * 180 / M_PI;
+}
+
+double Triangle::getArea() const {
+    double p = sum() / 2;
+    return sqrt(p * (p - a) * (p - b) * (p - c));
+}
+
+string Triangle::toString() const {
+    return "Треугольник со сторонами: " + to_string(a) + ", " + to_string(b) + ", " + to_string(c);
+}
+
+void Triangle::display() const {
+    cout << toString() << endl;
+    cout << "Углы: A=" << getAngleA() << "°, B=" << getAngleB() << "°, C=" << getAngleC() << "°" << endl;
+    cout << "Площадь: " << getArea() << endl;
+    cout << "Периметр: " << sum() << endl;
+}
+
+// Функция для демонстрации принципа подстановки
+void demonstratePrincipleOfSubstitution(const Triad& triad) {
+    cout << "Демонстрация принципа подстановки: " << triad.toString() << endl;
+    cout << "Сумма: " << triad.sum() << endl;
+}
+
+int main() {
+    cout << "=== Демонстрация работы с Triad и Triangle ===\n\n";
+
+    cout << "1. Создание объектов Triad:\n";
+    Triad triad1;
+    Triad triad2(2, 3, 4);
+    Triad triad3(triad2);
+
+    cout << "Triad1: "; triad1.display();
+    cout << "Triad2: "; triad2.display();
+    cout << "Triad3: "; triad3.display();
+
+    cout << "\n2. Создание объектов Triangle:\n";
+    Triangle triangle1;
+    Triangle triangle2(5, 12, 13);
+    Triangle triangle3(6, 8, 10);
+    Triangle triangle4(triangle2);
+
+    cout << "Triangle1:\n"; triangle1.display();
+    cout << "\nTriangle2:\n"; triangle2.display();
+    cout << "\nTriangle3:\n"; triangle3.display();
+    cout << "\nTriangle4:\n"; triangle4.display();
+
+    cout << "\n3. Принцип подстановки:\n";
+    demonstratePrincipleOfSubstitution(triad2);
+    cout << endl;
+    demonstratePrincipleOfSubstitution(triangle2);
+
+    cout << "\n4. Работа через указатели базового класса:\n";
+    Triad* shapes[4];
+    shapes[0] = new Triad(1, 2, 3);
+    shapes[1] = new Triangle(6, 8, 10);
+    shapes[2] = new Triangle(7, 24, 25);
+    shapes[3] = new Triad(10, 20, 30);
+
+    for (int i = 0; i < 4; i++) {
+        shapes[i]->display();
+        cout << endl;
+        delete shapes[i];
+    }
+
+    cout << "\n5. Массивы объектов:\n";
+    Triad triads[2] = {Triad(1, 2, 3), Triad(4, 5, 6)};
+    Triangle triangles[2] = {Triangle(3, 4, 5), Triangle(5, 12, 13)};
+
+    cout << "Массив Triad:\n";
+    for (int i = 0; i < 2; i++) {
+        triads[i].display();
+    }
+
+    cout << "\nМассив Triangle:\n";
+    for (int i = 0; i < 2; i++) {
+        triangles[i].display();
+        cout << endl;
+    }
+
+    cout << "6. Демонстрация различных типов треугольников:\n";
+    Triangle equilateral(5, 5, 5);
+    Triangle isosceles(5, 5, 8);
+    Triangle right(3, 4, 5);
+
+    cout << "Равносторонний:\n"; equilateral.display();
+    cout << "\nРавнобедренный:\n"; isosceles.display();
+    cout << "\nПрямоугольный:\n"; right.display();
+
+    cout << "\n7. Демонстрация обработки ошибок:\n";
+    cout << "Попытка создать Triad с отрицательным числом:\n";
+    // Triad errorTriad(-1, 2, 3); // Раскомментировать для демонстрации ошибки
+    
+    cout << "Попытка создать несуществующий треугольник:\n";
+    // Triangle errorTriangle(1, 2, 10); // Раскомментировать для демонстрации ошибки
+
+    return 0;
+}
