@@ -1,0 +1,78 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int candy(vector<int>& r) {
+    int n = r.size();
+    vector<int> c(n, 1);
+   
+    for (int i = 1; i < n; i++)
+        if (r[i] > r[i-1])
+            c[i] = c[i-1] + 1;
+    
+    for (int i = n-2; i >= 0; i--)
+        if (r[i] > r[i+1] && c[i+1] + 1 > c[i])
+            c[i] = c[i+1] + 1;
+    
+    int sum = 0;
+    for (int i = 0; i < n; i++) {
+        sum += c[i];
+    }
+    return sum;
+}
+
+int main() {
+    int n;
+    cout << "n: ";
+    cin >> n;
+    
+    vector<int> ratings(n);
+    for (int i = 0; i < n; i++) {
+        cin >> ratings[i];
+    }
+    
+    cout << candy(ratings) << endl;
+    
+    return 0;
+}
+
+-----------------------------------------------
+
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int calculateMinimumHP(vector<vector<int>>& dungeon) {
+    int m = dungeon.size();
+    int n = dungeon[0].size();
+    
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1, INT_MAX));
+    dp[m][n - 1] = dp[m - 1][n] = 1;
+    
+    for (int i = m - 1; i >= 0; i--)
+        for (int j = n - 1; j >= 0; j--)
+            dp[i][j] = max(1, min(dp[i + 1][j], dp[i][j + 1]) - dungeon[i][j]);
+    
+    return dp[0][0];
+}
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    
+    vector<vector<int>> dungeon(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++)
+            cin >> dungeon[i][j];
+    
+    cout << calculateMinimumHP(dungeon) << endl;
+    
+    return 0;
+}
+
+---------------------------------------
+
+
+
