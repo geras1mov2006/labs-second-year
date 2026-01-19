@@ -1,0 +1,395 @@
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <cmath>
+
+using namespace std;
+
+class GeoExV1 {};
+
+class GeoExV2 {
+private:
+    double a0;
+    double r;
+    double an;
+    string msg;
+    
+public:
+    GeoExV2(double a0, double r, double an, const string& msg)
+        : a0(a0), r(r), an(an), msg(msg) {}
+    
+    string get_msg() const { return msg; }
+    double get_a0() const { return a0; }
+    double get_r() const { return r; }
+    double get_an() const { return an; }
+};
+
+class GeoExV3 : public invalid_argument {
+private:
+    double a0;
+    double r;
+    double an;
+    
+public:
+    GeoExV3(double a0, double r, double an, const string& msg)
+        : invalid_argument(msg), a0(a0), r(r), an(an) {}
+    
+    double get_a0() const { return a0; }
+    double get_r() const { return r; }
+    double get_an() const { return an; }
+};
+
+double geom_sum_v1(double a0, double r, double an) {
+    if (fabs(1 - r) < 1e-10) {
+        throw runtime_error("Деление на ноль: знаменатель (1-r) равен нулю");
+    }
+    
+    if (isnan(a0) || isnan(r) || isnan(an)) {
+        throw invalid_argument("Один или несколько параметров - NaN");
+    }
+    
+    if (isinf(a0) || isinf(r) || isinf(an)) {
+        throw overflow_error("Один или несколько параметров бесконечны");
+    }
+    
+    double num = a0 - an * r;
+    double den = 1 - r;
+    
+    if (isinf(num) || isinf(den)) {
+        throw overflow_error("Переполнение при вычислениях");
+    }
+    
+    return num / den;
+}
+
+double geom_sum_v2(double a0, double r, double an) {
+    if (fabs(1 - r) < 1e-10) {
+        throw runtime_error("Деление на ноль: знаменатель (1-r) равен нулю");
+    }
+    
+    if (isnan(a0) || isnan(r) || isnan(an)) {
+        throw invalid_argument("Один или несколько параметров - NaN");
+    }
+    
+    if (isinf(a0) || isinf(r) || isinf(an)) {
+        throw overflow_error("Один или несколько параметров бесконечны");
+    }
+    
+    double num = a0 - an * r;
+    double den = 1 - r;
+    
+    if (isinf(num) || isinf(den)) {
+        throw overflow_error("Переполнение при вычислениях");
+    }
+    
+    return num / den;
+}
+
+double geom_sum_v3(double a0, double r, double an) {
+    if (fabs(1 - r) < 1e-10) {
+        throw runtime_error("Деление на ноль: знаменатель (1-r) равен нулю");
+    }
+    
+    if (isnan(a0) || isnan(r) || isnan(an)) {
+        throw invalid_argument("Один или несколько параметров - NaN");
+    }
+    
+    if (isinf(a0) || isinf(r) || isinf(an)) {
+        throw overflow_error("Один или несколько параметров бесконечны");
+    }
+    
+    double num = a0 - an * r;
+    double den = 1 - r;
+    
+    if (isinf(num) || isinf(den)) {
+        throw overflow_error("Переполнение при вычислениях");
+    }
+    
+    return num / den;
+}
+
+double geom_sum_v4a(double a0, double r, double an) {
+    if (fabs(1 - r) < 1e-10) {
+        throw GeoExV1();
+    }
+    
+    if (isnan(a0) || isnan(r) || isnan(an)) {
+        throw GeoExV1();
+    }
+    
+    if (isinf(a0) || isinf(r) || isinf(an)) {
+        throw GeoExV1();
+    }
+    
+    double num = a0 - an * r;
+    double den = 1 - r;
+    
+    if (isinf(num) || isinf(den)) {
+        throw GeoExV1();
+    }
+    
+    return num / den;
+}
+
+double geom_sum_v4b(double a0, double r, double an) {
+    if (fabs(1 - r) < 1e-10) {
+        throw GeoExV2(a0, r, an, "Деление на ноль: знаменатель (1-r) равен нулю");
+    }
+    
+    if (isnan(a0) || isnan(r) || isnan(an)) {
+        throw GeoExV2(a0, r, an, "Один или несколько параметров - NaN");
+    }
+    
+    if (isinf(a0) || isinf(r) || isinf(an)) {
+        throw GeoExV2(a0, r, an, "Один или несколько параметров бесконечны");
+    }
+    
+    double num = a0 - an * r;
+    double den = 1 - r;
+    
+    if (isinf(num) || isinf(den)) {
+        throw GeoExV2(a0, r, an, "Переполнение при вычислениях");
+    }
+    
+    return num / den;
+}
+
+double geom_sum_v4c(double a0, double r, double an) {
+    if (fabs(1 - r) < 1e-10) {
+        throw GeoExV3(a0, r, an, "Деление на ноль: знаменатель (1-r) равен нулю");
+    }
+    
+    if (isnan(a0) || isnan(r) || isnan(an)) {
+        throw GeoExV3(a0, r, an, "Один или несколько параметров - NaN");
+    }
+    
+    if (isinf(a0) || isinf(r) || isinf(an)) {
+        throw GeoExV3(a0, r, an, "Один или несколько параметров бесконечны");
+    }
+    
+    double num = a0 - an * r;
+    double den = 1 - r;
+    
+    if (isinf(num) || isinf(den)) {
+        throw GeoExV3(a0, r, an, "Переполнение при вычислениях");
+    }
+    
+    return num / den;
+}
+
+int main() {
+    cout << "=== Тестирование функции суммы геометрической прогрессии ===\n" << endl;
+    
+    double a0_ok = 2.0, r_ok = 0.5, an_ok = 0.25;
+    double a0_nan = NAN, r_nan = 0.5, an_nan = 0.25;
+    double a0_inf = INFINITY, r_inf = 0.5, an_inf = 0.25;
+    double a0_div0 = 2.0, r_div0 = 1.0, an_div0 = 1.0;
+    
+    double res;
+    
+    cout << "1. geom_sum_v1:" << endl;
+    
+    try {
+        res = geom_sum_v1(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные: S = " << res << endl;
+    }
+    catch (const exception& e) {
+        cout << "   Ошибка: " << e.what() << endl;
+    }
+    
+    try {
+        res = geom_sum_v1(a0_div0, r_div0, an_div0);
+        cout << "   Деление на ноль: S = " << res << endl;
+    }
+    catch (const exception& e) {
+        cout << "   Ошибка деления на ноль: " << e.what() << endl;
+    }
+    
+    try {
+        res = geom_sum_v1(a0_nan, r_nan, an_nan);
+        cout << "   NaN параметр: S = " << res << endl;
+    }
+    catch (const exception& e) {
+        cout << "   Ошибка NaN параметра: " << e.what() << endl;
+    }
+    
+    cout << endl;
+    
+    cout << "2. geom_sum_v2:" << endl;
+    
+    try {
+        res = geom_sum_v2(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные: S = " << res << endl;
+    }
+    catch (const exception& e) {
+        cout << "   Ошибка: " << e.what() << endl;
+    }
+    
+    try {
+        res = geom_sum_v2(a0_div0, r_div0, an_div0);
+        cout << "   Деление на ноль: S = " << res << endl;
+    }
+    catch (const exception& e) {
+        cout << "   Ошибка деления на ноль: " << e.what() << endl;
+    }
+    
+    cout << endl;
+    
+    cout << "3. geom_sum_v3:" << endl;
+    
+    try {
+        res = geom_sum_v3(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные: S = " << res << endl;
+    }
+    catch (const invalid_argument& e) {
+        cout << "   Ошибка неверного аргумента: " << e.what() << endl;
+    }
+    catch (const overflow_error& e) {
+        cout << "   Ошибка переполнения: " << e.what() << endl;
+    }
+    catch (const runtime_error& e) {
+        cout << "   Ошибка времени выполнения: " << e.what() << endl;
+    }
+    catch (...) {
+        cout << "   Неизвестная ошибка" << endl;
+    }
+    
+    try {
+        res = geom_sum_v3(a0_div0, r_div0, an_div0);
+        cout << "   Деление на ноль: S = " << res << endl;
+    }
+    catch (const invalid_argument& e) {
+        cout << "   Ошибка неверного аргумента: " << e.what() << endl;
+    }
+    catch (const overflow_error& e) {
+        cout << "   Ошибка переполнения: " << e.what() << endl;
+    }
+    catch (const runtime_error& e) {
+        cout << "   Ошибка деления на ноль: " << e.what() << endl;
+    }
+    catch (...) {
+        cout << "   Неизвестная ошибка" << endl;
+    }
+    
+    try {
+        res = geom_sum_v3(a0_nan, r_nan, an_nan);
+        cout << "   NaN параметр: S = " << res << endl;
+    }
+    catch (const invalid_argument& e) {
+        cout << "   Ошибка NaN параметра: " << e.what() << endl;
+    }
+    catch (const overflow_error& e) {
+        cout << "   Ошибка переполнения: " << e.what() << endl;
+    }
+    catch (const runtime_error& e) {
+        cout << "   Ошибка времени выполнения: " << e.what() << endl;
+    }
+    catch (...) {
+        cout << "   Неизвестная ошибка" << endl;
+    }
+    
+    cout << endl;
+    
+    cout << "4a. geom_sum_v4a:" << endl;
+    
+    try {
+        res = geom_sum_v4a(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные: S = " << res << endl;
+    }
+    catch (const GeoExV1& e) {
+        cout << "   Ошибка: GeoExV1 поймано" << endl;
+    }
+    
+    try {
+        res = geom_sum_v4a(a0_div0, r_div0, an_div0);
+        cout << "   Деление на ноль: S = " << res << endl;
+    }
+    catch (const GeoExV1& e) {
+        cout << "   Ошибка деления на ноль: GeoExV1 поймано" << endl;
+    }
+    
+    cout << endl;
+    
+    cout << "4b. geom_sum_v4b:" << endl;
+    
+    try {
+        res = geom_sum_v4b(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные: S = " << res << endl;
+    }
+    catch (const GeoExV2& e) {
+        cout << "   Ошибка: " << e.get_msg() 
+             << " (a0=" << e.get_a0() 
+             << ", r=" << e.get_r() 
+             << ", an=" << e.get_an() << ")" << endl;
+    }
+    
+    try {
+        res = geom_sum_v4b(a0_div0, r_div0, an_div0);
+        cout << "   Деление на ноль: S = " << res << endl;
+    }
+    catch (const GeoExV2& e) {
+        cout << "   Ошибка деления на ноль: " << e.get_msg() 
+             << " (a0=" << e.get_a0() 
+             << ", r=" << e.get_r() 
+             << ", an=" << e.get_an() << ")" << endl;
+    }
+    
+    try {
+        res = geom_sum_v4b(a0_inf, r_inf, an_inf);
+        cout << "   Бесконечный параметр: S = " << res << endl;
+    }
+    catch (const GeoExV2& e) {
+        cout << "   Ошибка бесконечного параметра: " << e.get_msg() 
+             << " (a0=" << e.get_a0() 
+             << ", r=" << e.get_r() 
+             << ", an=" << e.get_an() << ")" << endl;
+    }
+    
+    cout << endl;
+    
+    cout << "4c. geom_sum_v4c:" << endl;
+    
+    try {
+        res = geom_sum_v4c(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные: S = " << res << endl;
+    }
+    catch (const GeoExV3& e) {
+        cout << "   Ошибка: " << e.what() 
+             << " (a0=" << e.get_a0() 
+             << ", r=" << e.get_r() 
+             << ", an=" << e.get_an() << ")" << endl;
+    }
+    catch (const invalid_argument& e) {
+        cout << "   Ошибка неверного аргумента: " << e.what() << endl;
+    }
+    
+    try {
+        res = geom_sum_v4c(a0_div0, r_div0, an_div0);
+        cout << "   Деление на ноль: S = " << res << endl;
+    }
+    catch (const GeoExV3& e) {
+        cout << "   Ошибка деления на ноль: " << e.what() 
+             << " (a0=" << e.get_a0() 
+             << ", r=" << e.get_r() 
+             << ", an=" << e.get_an() << ")" << endl;
+    }
+    catch (const invalid_argument& e) {
+        cout << "   Ошибка неверного аргумента: " << e.what() << endl;
+    }
+    
+    try {
+        res = geom_sum_v4c(a0_nan, r_nan, an_nan);
+        cout << "   NaN параметр: S = " << res << endl;
+    }
+    catch (const GeoExV3& e) {
+        cout << "   Ошибка NaN параметра: " << e.what() 
+             << " (a0=" << e.get_a0() 
+             << ", r=" << e.get_r() 
+             << ", an=" << e.get_an() << ")" << endl;
+    }
+    catch (const invalid_argument& e) {
+        cout << "   Ошибка неверного аргумента: " << e.what() << endl;
+    }
+    
+    return 0;
+}
