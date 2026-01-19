@@ -1,0 +1,204 @@
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <stdexcept>
+
+using namespace std;
+
+template <typename T, size_t MaxSize>
+class LimitedStack {
+private:
+    T data[MaxSize];
+    size_t topIndex;
+
+public:
+    LimitedStack();
+    
+    T get() const;
+    void push(const T& element);
+    void pop();
+    bool isEmpty() const;
+    bool isFull() const;
+    size_t size() const;
+    size_t maxSize() const;
+    
+    std::string toString() const;
+    void clear();
+    
+    template <typename U, size_t S>
+    friend std::ostream& operator<<(std::ostream& stream, const LimitedStack<U, S>& stack);
+    
+    template <typename U, size_t S>
+    friend std::istream& operator>>(std::istream& stream, LimitedStack<U, S>& stack);
+};
+
+template <typename T, size_t MaxSize>
+LimitedStack<T, MaxSize>::LimitedStack() : topIndex(0) {}
+
+template <typename T, size_t MaxSize>
+T LimitedStack<T, MaxSize>::get() const {
+    if (isEmpty()) {
+        throw std::out_of_range("Stack is empty");
+    }
+    return data[topIndex - 1];
+}
+
+template <typename T, size_t MaxSize>
+void LimitedStack<T, MaxSize>::push(const T& element) {
+    if (isFull()) {
+        throw std::overflow_error("Stack overflow: maximum size reached");
+    }
+    data[topIndex] = element;
+    topIndex++;
+}
+
+template <typename T, size_t MaxSize>
+void LimitedStack<T, MaxSize>::pop() {
+    if (isEmpty()) {
+        throw std::out_of_range("Stack underflow: cannot pop from empty stack");
+    }
+    topIndex--;
+}
+
+template <typename T, size_t MaxSize>
+bool LimitedStack<T, MaxSize>::isEmpty() const {
+    return topIndex == 0;
+}
+
+template <typename T, size_t MaxSize>
+bool LimitedStack<T, MaxSize>::isFull() const {
+    return topIndex >= MaxSize;
+}
+
+template <typename T, size_t MaxSize>
+size_t LimitedStack<T, MaxSize>::size() const {
+    return topIndex;
+}
+
+template <typename T, size_t MaxSize>
+size_t LimitedStack<T, MaxSize>::maxSize() const {
+    return MaxSize;
+}
+
+template <typename T, size_t MaxSize>
+std::string LimitedStack<T, MaxSize>::toString() const {
+    std::ostringstream oss;
+    oss << "LimitedStack[";
+    for (size_t i = 0; i < topIndex; i++) {
+        oss << data[i];
+        if (i < topIndex - 1) {
+            oss << ", ";
+        }
+    }
+    oss << "] (size=" << size() << ", max=" << MaxSize << ")";
+    return oss.str();
+}
+
+template <typename T, size_t MaxSize>
+void LimitedStack<T, MaxSize>::clear() {
+    topIndex = 0;
+}
+
+template <typename T, size_t MaxSize>
+std::ostream& operator<<(std::ostream& stream, const LimitedStack<T, MaxSize>& stack) {
+    stream << "[";
+    for (size_t i = 0; i < stack.topIndex; i++) {
+        stream << stack.data[i];
+        if (i < stack.topIndex - 1) {
+            stream << " ";
+        }
+    }
+    stream << "]";
+    return stream;
+}
+
+template <typename T, size_t MaxSize>
+std::istream& operator>>(std::istream& stream, LimitedStack<T, MaxSize>& stack) {
+    stack.clear();
+    
+    T element;
+    size_t count = 0;
+    
+    while (count < MaxSize && stream >> element) {
+        stack.push(element);
+        count++;
+    }
+    
+    return stream;
+}
+
+int main() {
+    cout << "=== Тестирование LimitedStack ===" << endl;
+    
+    LimitedStack<int, 5> stack1;
+    
+    cout << "Создан стек: " << stack1.toString() << endl;
+    cout << "Максимальный размер: " << stack1.maxSize() << endl;
+    cout << "Пустой? " << (stack1.isEmpty() ? "Да" : "Нет") << endl;
+    
+    cout << "\n=== Добавление элементов ===" << endl;
+    try {
+        for (int i = 1; i <= 5; i++) {
+            stack1.push(i * 10);
+            cout << "Добавлен " << i * 10 << ": " << stack1.toString() << endl;
+        }
+        
+        cout << "\nПопытка добавить 60 (сверх лимита): ";
+        stack1.push(60);
+    } catch (const std::overflow_error& e) {
+        cout << "Ошибка: " << e.what() << endl;
+    }
+    
+    cout << "\n=== Получение элементов ===" << endl;
+    try {
+        cout << "Верхний элемент: " << stack1.get() << endl;
+    } catch (const std::out_of_range& e) {
+        cout << "Ошибка: " << e.what() << endl;
+    }
+    
+    cout << "\n=== Удаление элементов ===" << endl;
+    try {
+        for (int i = 0; i < 3; i++) {
+            cout << "Перед pop: " << stack1.toString() << endl;
+            stack1.pop();
+            cout << "После pop: " << stack1.toString() << endl;
+        }
+    } catch (const std::out_of_range& e) {
+        cout << "Ошибка: " << e.what() << endl;
+    }
+    
+    cout << "\n=== Использование оператора вывода ===" << endl;
+    cout << "Стек через operator<<: " << stack1 << endl;
+    
+    cout << "\n=== Очистка стека ===" << endl;
+    stack1.clear();
+    cout << "После clear(): " << stack1.toString() << endl;
+    
+    cout << "\n=== Использование оператора ввода ===" << endl;
+    LimitedStack<double, 3> stack2;
+    
+    cout << "Введите до 3 чисел с плавающей точкой (например: 1.5 2.7 3.14): ";
+    cin.clear();
+    cin.ignore(1000, '\n');
+    
+    cin >> stack2;
+    cout << "Результат ввода: " << stack2.toString() << endl;
+    cout << "Вывод через operator<<: " << stack2 << endl;
+    
+    cout << "\n=== Тест со строками ===" << endl;
+    LimitedStack<string, 4> stack3;
+    
+    stack3.push("Hello");
+    stack3.push("World");
+    stack3.push("from");
+    stack3.push("Stack");
+    
+    cout << "Стек строк: " << stack3.toString() << endl;
+    cout << "Вывод через operator<<: " << stack3 << endl;
+    cout << "Верхний элемент: " << stack3.get() << endl;
+    
+    stack3.pop();
+    cout << "После одного pop: " << stack3.toString() << endl;
+    
+    return 0;
+}
