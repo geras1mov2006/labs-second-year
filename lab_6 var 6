@@ -1,0 +1,119 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+static const int MAX_LENGTH = 100;
+
+class Base_number {
+protected:
+    unsigned char data[MAX_LENGTH];
+    int len;
+
+public:
+    Base_number();
+    virtual void setValue() = 0;
+    virtual void print() const = 0;
+};
+
+class Money : public Base_number {
+private:
+    long rubles;
+    unsigned char kopecks;
+
+public:
+    Money();
+    Money(long rub, unsigned char kop);
+    void setValue() override;
+    void print() const override;
+};
+
+class BitString : public Base_number {
+public:
+    BitString();
+    BitString(string value);
+    void setValue() override;
+    void print() const override;
+};
+
+Base_number::Base_number() {
+    for (int i = 0; i < MAX_LENGTH; ++i) {
+        data[i] = 0;
+    }
+    len = 0;
+}
+
+Money::Money() : Base_number(), rubles(0), kopecks(0) {}
+Money::Money(long rub, unsigned char kop) : Base_number(), rubles(rub), kopecks(kop) {}
+
+void Money::setValue() {
+    cout << "Введите рубли: ";
+    cin >> rubles;
+    cout << "Введите копейки: ";
+    int kop;
+    cin >> kop;
+    kopecks = kop;
+}
+
+void Money::print() const {
+    cout << rubles << " руб. ";
+    if (kopecks < 10) cout << "0";
+    cout << (int)kopecks << " коп." << endl;
+}
+
+BitString::BitString() : Base_number() {}
+BitString::BitString(string value) : Base_number() {
+    len = value.length();
+    if (len > MAX_LENGTH) len = MAX_LENGTH;
+    for (int i = 0; i < len; i++) {
+        data[i] = (value[i] == '1') ? 1 : 0;
+    }
+}
+
+void BitString::setValue() {
+    string value;
+    cout << "Введите битовую строку: ";
+    cin >> value;
+    len = value.length();
+    if (len > MAX_LENGTH) len = MAX_LENGTH;
+    for (int i = 0; i < len; i++) {
+        data[i] = (value[i] == '1') ? 1 : 0;
+    }
+}
+
+void BitString::print() const {
+    if (len == 0) {
+        cout << "0" << endl;
+        return;
+    }
+    for (int i = 0; i < len; ++i) {
+        cout << (int)data[i];
+    }
+    cout << endl;
+}
+
+int main() {
+    Base_number* array[3];
+    
+    array[0] = new Money(1000, 50);
+    array[1] = new BitString("11011");
+    array[2] = new Money();
+    
+    cout << "Вывод объектов:" << endl;
+    for (int i = 0; i < 3; i++) {
+        array[i]->print();
+    }
+    
+    cout << "\nИзменение третьего объекта:" << endl;
+    array[2]->setValue();
+    
+    cout << "\nФинальные значения:" << endl;
+    for (int i = 0; i < 3; i++) {
+        array[i]->print();
+    }
+    
+    for (int i = 0; i < 3; i++) {
+        delete array[i];
+    }
+    
+    return 0;
+}
