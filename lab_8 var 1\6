@@ -1,0 +1,98 @@
+#include <iostream>
+#include <utility>
+using namespace std;
+
+template <typename T>
+bool compare(const T& a, const T& b) {
+    return a == b;
+}
+
+template <typename T>
+int partition(T arr[], int low, int high) {
+    T pivot = arr[high];
+    int i = low - 1;
+    
+    for (int j = low; j < high; j++) {
+        if (arr[j] <= pivot) {
+            i++;
+            swap(arr[i], arr[j]);
+        }
+    }
+    
+    swap(arr[i + 1], arr[high]);
+    return i + 1;
+}
+
+template <typename T>
+void sortQuick(T arr[], int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        sortQuick(arr, low, pi - 1);
+        sortQuick(arr, pi + 1, high);
+    }
+}
+
+template <typename T>
+void sortQuick(T arr[], int size) {
+    if (size > 1) {
+        sortQuick(arr, 0, size - 1);
+    }
+}
+
+template <typename T>
+void printArray(T arr[], int size) {
+    for (int i = 0; i < size; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    cout << "compare(5, 5): " << (compare(5, 5) ? "true" : "false") << endl;
+    cout << "compare(5, 10): " << (compare(5, 10) ? "true" : "false") << endl;
+    
+    cout << "compare(3.14, 3.14): " << (compare(3.14, 3.14) ? "true" : "false") << endl;
+    cout << "compare(3.14, 2.71): " << (compare(3.14, 2.71) ? "true" : "false") << endl;
+    
+    string str1 = "hello";
+    string str2 = "hello";
+    string str3 = "world";
+    
+    cout << "compare(\"hello\", \"hello\"): " << (compare(str1, str2) ? "true" : "false") << endl;
+    cout << "compare(\"hello\", \"world\"): " << (compare(str1, str3) ? "true" : "false") << endl;
+    
+    int intArr[] = {64, 34, 25, 12, 22, 11, 90};
+    int intSize = sizeof(intArr) / sizeof(intArr[0]);
+    
+    cout << "\nИсходный массив (int): ";
+    printArray(intArr, intSize);
+    
+    sortQuick(intArr, intSize);
+    
+    cout << "Отсортированный массив (int): ";
+    printArray(intArr, intSize);
+    
+    double doubleArr[] = {64.5, 34.2, 25.1, 12.7, 22.3, 11.9, 90.0};
+    int doubleSize = sizeof(doubleArr) / sizeof(doubleArr[0]);
+    
+    cout << "\nИсходный массив (double): ";
+    printArray(doubleArr, doubleSize);
+    
+    sortQuick(doubleArr, doubleSize);
+    
+    cout << "Отсортированный массив (double): ";
+    printArray(doubleArr, doubleSize);
+    
+    string strArr[] = {"banana", "apple", "orange", "grape", "cherry"};
+    int strSize = sizeof(strArr) / sizeof(strArr[0]);
+    
+    cout << "\nИсходный массив (string): ";
+    printArray(strArr, strSize);
+    
+    sortQuick(strArr, strSize);
+    
+    cout << "Отсортированный массив (string): ";
+    printArray(strArr, strSize);
+    
+    return 0;
+}
