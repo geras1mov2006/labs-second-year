@@ -1,0 +1,72 @@
+#include <iostream>
+#include <tuple>
+#include <utility>
+
+using namespace std;
+
+template<typename Condition>
+bool anyTrue(Condition&& condition) {
+    return static_cast<bool>(condition);
+}
+
+template<typename First, typename... Rest>
+bool anyTrue(First&& first, Rest&&... rest) {
+    return static_cast<bool>(first) || anyTrue(forward<Rest>(rest)...);
+}
+
+template<typename T>
+T sumForAverage(T value) {
+    return value;
+}
+
+template<typename First, typename... Rest>
+auto sumForAverage(First first, Rest... rest) -> decltype(first + sumForAverage(rest...)) {
+    return first + sumForAverage(rest...);
+}
+
+template<typename... Args>
+auto average(Args&&... args) -> decltype(sumForAverage(forward<Args>(args)...) / sizeof...(args)) {
+    using ResultType = decltype(sumForAverage(forward<Args>(args)...));
+    ResultType sum = sumForAverage(forward<Args>(args)...);
+    return sum / static_cast<ResultType>(sizeof...(args));
+}
+
+template<typename... Args>
+struct ReverseHelper;
+
+template<typename T>
+struct ReverseHelper<T> {
+    static tuple<T> reverse(T&& arg) {
+        return make_tuple(forward<T>(arg));
+    }
+};
+
+template<typename First, typename... Rest>
+struct ReverseHelper<First, Rest...> {
+    static auto reverse(First&& first, Rest&&... rest) -> decltype(tuple_cat(
+        ReverseHelper<Rest...>::reverse(forward<Rest>(rest)...),
+        make_tuple(forward<First>(first)))) {
+        
+        auto reversedRest = ReverseHelper<Rest...>::reverse(forward<Rest>(rest)...);
+        return tuple_cat(reversedRest, make_tuple(forward<First>(first)));
+    }
+};
+
+template<typename... Args>
+auto reverseArgs(Args&&... args) -> decltype(ReverseHelper<Args...>::reverse(forward<Args>(args)...)) {
+    return ReverseHelper<Args...>::reverse(forward<Args>(args)...);
+}
+
+int main() {
+    cout << "anyTrue(false, true, false): " << anyTrue(false, true, false) << endl;
+    cout << "anyTrue(false, false): " << anyTrue(false, false) << endl;
+    
+    cout << "average(1.0, 2.0, 3.0): " << average(1.0, 2.0, 3.0) << endl;
+    cout << "average(10, 20, 30): " << average(10, 20, 30) << endl;
+    
+    auto reversed = reverseArgs(1, 2.5, "hello");
+    cout << "reverseArgs(1, 2.5, \"hello\"): ";
+    cout << get<0>(reversed) << ", " << get<1>(reversed) << ", " << get<2>(reversed) << endl;
+    
+    return 0;
+}
