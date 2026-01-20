@@ -1,0 +1,46 @@
+#include <iostream>
+#include <tuple>
+#include <utility>
+#include <type_traits>
+
+using namespace std;
+
+template<typename... Conditions>
+bool anyTrue(Conditions&&... conditions) {
+    return (static_cast<bool>(conditions) || ...);
+}
+
+template<typename... Args>
+auto average(Args&&... args) {
+    if constexpr (sizeof...(Args) == 0) {
+        return 0.0;
+    } else {
+        using ResultType = decltype((... + args));
+        ResultType sum = (... + args);
+        return sum / static_cast<ResultType>(sizeof...(args));
+    }
+}
+
+template<typename... Args>
+auto reverseArgs(Args&&... args) {
+    auto tup = make_tuple(forward<Args>(args)...);
+    
+    return [&tup]<size_t... I>(index_sequence<I...>) {
+        return make_tuple(get<sizeof...(Args) - 1 - I>(move(tup))...);
+    }(make_index_sequence<sizeof...(Args)>{});
+}
+
+int main() {
+    cout << "anyTrue(false, true, false): " << anyTrue(false, true, false) << endl;
+    cout << "anyTrue(false, false): " << anyTrue(false, false) << endl;
+    
+    cout << "average(1.0, 2.0, 3.0): " << average(1.0, 2.0, 3.0) << endl;
+    cout << "average(10, 20, 30): " << average(10, 20, 30) << endl;
+    cout << "average(): " << average() << endl;
+    
+    auto reversed = reverseArgs(1, 2.5, "hello");
+    cout << "reverseArgs(1, 2.5, \"hello\"): ";
+    cout << get<0>(reversed) << ", " << get<1>(reversed) << ", " << get<2>(reversed) << endl;
+    
+    return 0;
+}
