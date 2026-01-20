@@ -1,0 +1,267 @@
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <stdexcept>
+#include <type_traits>
+
+using namespace std;
+
+template <typename T, size_t MaxSize>
+class LimitedStack {
+private:
+    T data[MaxSize];
+    size_t topIndex;
+
+public:
+    LimitedStack() noexcept;
+    
+    auto get() const -> decltype(auto);
+    void push(const T& element);
+    void pop();
+    
+    auto isEmpty() const -> decltype(topIndex == 0);
+    auto isFull() const -> decltype(topIndex >= MaxSize);
+    
+    auto size() const;
+    static auto maxSize() -> decltype(MaxSize);
+    
+    using DataType = decltype(data);
+    using IndexType = decltype(topIndex);
+    
+    std::string toString() const;
+    void clear();
+    
+    template <typename U, size_t S>
+    friend auto operator<<(std::ostream& stream, const LimitedStack<U, S>& stack) 
+        -> decltype(stream << stack.data[0], stream);
+    
+    template <typename U, size_t S>
+    friend auto operator>>(std::istream& stream, LimitedStack<U, S>& stack)
+        -> decltype(stream >> stack.data[0], stream);
+};
+
+template <typename T, size_t MaxSize>
+LimitedStack<T, MaxSize>::LimitedStack() noexcept : topIndex(0) {
+    static_assert(std::is_copy_constructible<T>::value, 
+                  "Type T must be copy constructible for LimitedStack");
+    
+    static_assert(std::is_copy_assignable<T>::value, 
+                  "Type T must be copy assignable for LimitedStack");
+}
+
+template <typename T, size_t MaxSize>
+auto LimitedStack<T, MaxSize>::get() const -> decltype(auto) {
+    if (isEmpty()) {
+        throw std::out_of_range("Stack is empty");
+    }
+    return data[topIndex - 1];
+}
+
+template <typename T, size_t MaxSize>
+void LimitedStack<T, MaxSize>::push(const T& element) {
+    if (isFull()) {
+        throw std::overflow_error("Stack overflow: maximum size reached");
+    }
+    data[topIndex] = element;
+    topIndex++;
+}
+
+template <typename T, size_t MaxSize>
+void LimitedStack<T, MaxSize>::pop() {
+    if (isEmpty()) {
+        throw std::out_of_range("Stack underflow: cannot pop from empty stack");
+    }
+    topIndex--;
+}
+
+template <typename T, size_t MaxSize>
+auto LimitedStack<T, MaxSize>::isEmpty() const -> decltype(topIndex == 0) {
+    return topIndex == 0;
+}
+
+template <typename T, size_t MaxSize>
+auto LimitedStack<T, MaxSize>::isFull() const -> decltype(topIndex >= MaxSize) {
+    return topIndex >= MaxSize;
+}
+
+template <typename T, size_t MaxSize>
+auto LimitedStack<T, MaxSize>::size() const {
+    return topIndex;
+}
+
+template <typename T, size_t MaxSize>
+auto LimitedStack<T, MaxSize>::maxSize() -> decltype(MaxSize) {
+    return MaxSize;
+}
+
+template <typename T, size_t MaxSize>
+std::string LimitedStack<T, MaxSize>::toString() const {
+    std::ostringstream oss;
+    oss << "LimitedStack[";
+    
+    for (auto i = 0U; i < topIndex; i++) {
+        oss << data[i];
+        if (i < topIndex - 1) {
+            oss << ", ";
+        }
+    }
+    oss << "] (size=" << size() << ", max=" << MaxSize << ")";
+    return oss.str();
+}
+
+template <typename T, size_t MaxSize>
+void LimitedStack<T, MaxSize>::clear() {
+    topIndex = 0;
+}
+
+template <typename T, size_t MaxSize>
+auto operator<<(std::ostream& stream, const LimitedStack<T, MaxSize>& stack) 
+    -> decltype(stream << stack.data[0], stream) {
+    stream << "[";
+    for (auto i = 0U; i < stack.topIndex; i++) {
+        stream << stack.data[i];
+        if (i < stack.topIndex - 1) {
+            stream << " ";
+        }
+    }
+    stream << "]";
+    return stream;
+}
+
+template <typename T, size_t MaxSize>
+auto operator>>(std::istream& stream, LimitedStack<T, MaxSize>& stack)
+    -> decltype(stream >> stack.data[0], stream) {
+    stack.clear();
+    
+    T element;
+    auto count = 0U;
+    
+    while (count < MaxSize && stream >> element) {
+        stack.push(element);
+        count++;
+    }
+    
+    return stream;
+}
+
+template <typename StackType>
+auto printStackInfo(const StackType& stack) -> decltype(stack.toString(), void()) {
+    cout << "Stack info: " << stack.toString() << endl;
+    cout << "Size: " << stack.size() << ", Empty: " 
+         << (stack.isEmpty() ? "Yes" : "No") << endl;
+}
+
+int main() {
+    cout << "=== Тестирование Modern LimitedStack ===" << endl;
+    
+    const auto constStack = LimitedStack<int, 5>();
+    
+    decltype(constStack) mutableStack;
+    
+    cout << "\n=== Добавление элементов ===" << endl;
+    try {
+        auto values = {10, 20, 30, 40, 50};
+        for (auto value : values) {
+            mutableStack.push(value);
+            auto current = mutableStack.get();
+            
+            using ValueType = decltype(current);
+            cout << "Добавлен " << value << " (тип: " << typeid(ValueType).name() 
+                 << "): " << mutableStack.toString() << endl;
+        }
+        
+        cout << "\nПопытка добавить сверх лимита: ";
+        mutableStack.push(60);
+    } catch (const std::overflow_error& e) {
+        cout << "Ошибка: " << e.what() << endl;
+    }
+    
+    cout << "\n=== Работа с decltype для типов ===" << endl;
+    using IntStack = decltype(mutableStack);
+    
+    IntStack anotherStack;
+    anotherStack.push(100);
+    cout << "Стек того же типа (через decltype): " << anotherStack.toString() << endl;
+    
+    cout << "\n=== Использование auto в шаблонных функциях ===" << endl;
+    auto stackProcessor = [](auto& stack) {
+        cout << "Обработка стека: ";
+        while (!stack.isEmpty()) {
+            auto top = stack.get();
+            cout << top << " ";
+            stack.pop();
+        }
+        cout << endl;
+    };
+    
+    decltype(mutableStack) copyStack = mutableStack;
+    cout << "Копия стека: " << copyStack.toString() << endl;
+    
+    cout << "\nОбработка копии стека:" << endl;
+    stackProcessor(copyStack);
+    
+    cout << "\n=== Работа со строками и auto ===" << endl;
+    auto stringStack = LimitedStack<string, 4>();
+    
+    auto strings = {"Hello", "World", "from", "Stack"};
+    for (const auto& str : strings) {
+        stringStack.push(str);
+    }
+    
+    cout << "Стек строк: " << stringStack << endl;
+    
+    auto processStringStack = [&stringStack]() -> decltype(stringStack.get()) {
+        if (!stringStack.isEmpty()) {
+            return stringStack.get();
+        }
+        return string();
+    };
+    
+    auto topString = processStringStack();
+    cout << "Верхняя строка (через лямбду): " << topString << endl;
+    
+    cout << "\n=== Использование вспомогательной функции ===" << endl;
+    printStackInfo(stringStack);
+    
+    cout << "\n=== Проверка типа через decltype ===" << endl;
+    cout << "Тип stringStack.get(): " << typeid(decltype(stringStack.get())).name() << endl;
+    cout << "Тип stringStack.isEmpty(): " << typeid(decltype(stringStack.isEmpty())).name() << endl;
+    cout << "Тип stringStack.size(): " << typeid(decltype(stringStack.size())).name() << endl;
+    
+    cout << "\n=== Ввод через поток ===" << endl;
+    auto inputStack = LimitedStack<double, 3>();
+    
+    cout << "Введите до 3 чисел (например: 1.1 2.2 3.3): ";
+    cin.clear();
+    cin.ignore(1000, '\n');
+    
+    cin >> inputStack;
+    cout << "Результат: " << inputStack << endl;
+    
+    if (!inputStack.isEmpty()) {
+        auto element = inputStack.get();
+        cout << "Тип элемента: " << typeid(decltype(element)).name() 
+             << ", значение: " << element << endl;
+    }
+    
+    cout << "\n=== Тест со сложным типом ===" << endl;
+    struct Point {
+        int x, y;
+        
+        friend ostream& operator<<(ostream& os, const Point& p) {
+            return os << "(" << p.x << "," << p.y << ")";
+        }
+        
+        friend istream& operator>>(istream& is, Point& p) {
+            return is >> p.x >> p.y;
+        }
+    };
+    
+    auto pointStack = LimitedStack<Point, 2>();
+    pointStack.push({1, 2});
+    pointStack.push({3, 4});
+    
+    cout << "Стек точек: " << pointStack << endl;
+    
+    return 0;
+}
