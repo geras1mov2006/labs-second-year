@@ -13,7 +13,7 @@ private:
     size_t topIndex;
 
 public:
-    LimitedStack() noexcept;
+    LimitedStack();
     
     auto get() const -> decltype(auto);
     void push(const T& element);
@@ -24,9 +24,6 @@ public:
     
     auto size() const;
     static auto maxSize() -> decltype(MaxSize);
-    
-    using DataType = decltype(data);
-    using IndexType = decltype(topIndex);
     
     std::string toString() const;
     void clear();
@@ -41,7 +38,7 @@ public:
 };
 
 template <typename T, size_t MaxSize>
-LimitedStack<T, MaxSize>::LimitedStack() noexcept : topIndex(0) {
+LimitedStack<T, MaxSize>::LimitedStack() : topIndex(0) {
     static_assert(std::is_copy_constructible<T>::value, 
                   "Type T must be copy constructible for LimitedStack");
     
@@ -144,89 +141,57 @@ auto operator>>(std::istream& stream, LimitedStack<T, MaxSize>& stack)
     return stream;
 }
 
-template <typename StackType>
-auto printStackInfo(const StackType& stack) -> decltype(stack.toString(), void()) {
-    cout << "Stack info: " << stack.toString() << endl;
-    cout << "Size: " << stack.size() << ", Empty: " 
-         << (stack.isEmpty() ? "Yes" : "No") << endl;
-}
-
 int main() {
-    cout << "=== Тестирование Modern LimitedStack ===" << endl;
+    cout << "=== Тестирование LimitedStack ===" << endl;
     
-    const auto constStack = LimitedStack<int, 5>();
-    
-    decltype(constStack) mutableStack;
+    auto stack = LimitedStack<int, 5>();
     
     cout << "\n=== Добавление элементов ===" << endl;
     try {
-        auto values = {10, 20, 30, 40, 50};
-        for (auto value : values) {
-            mutableStack.push(value);
-            auto current = mutableStack.get();
-            
-            using ValueType = decltype(current);
-            cout << "Добавлен " << value << " (тип: " << typeid(ValueType).name() 
-                 << "): " << mutableStack.toString() << endl;
+        for (auto value : {10, 20, 30, 40, 50}) {
+            stack.push(value);
+            cout << "Добавлен " << value << ": " << stack.toString() << endl;
         }
         
         cout << "\nПопытка добавить сверх лимита: ";
-        mutableStack.push(60);
+        stack.push(60);
     } catch (const std::overflow_error& e) {
         cout << "Ошибка: " << e.what() << endl;
     }
     
-    cout << "\n=== Работа с decltype для типов ===" << endl;
-    using IntStack = decltype(mutableStack);
+    cout << "\n=== Получение элементов ===" << endl;
+    try {
+        cout << "Верхний элемент: " << stack.get() << endl;
+    } catch (const std::out_of_range& e) {
+        cout << "Ошибка: " << e.what() << endl;
+    }
     
-    IntStack anotherStack;
-    anotherStack.push(100);
-    cout << "Стек того же типа (через decltype): " << anotherStack.toString() << endl;
-    
-    cout << "\n=== Использование auto в шаблонных функциях ===" << endl;
-    auto stackProcessor = [](auto& stack) {
-        cout << "Обработка стека: ";
-        while (!stack.isEmpty()) {
-            auto top = stack.get();
-            cout << top << " ";
+    cout << "\n=== Удаление элементов ===" << endl;
+    try {
+        for (auto i = 0; i < 3; i++) {
+            cout << "Перед pop: " << stack.toString() << endl;
             stack.pop();
+            cout << "После pop: " << stack.toString() << endl;
         }
-        cout << endl;
-    };
+    } catch (const std::out_of_range& e) {
+        cout << "Ошибка: " << e.what() << endl;
+    }
     
-    decltype(mutableStack) copyStack = mutableStack;
+    cout << "\n=== Вывод через operator<< ===" << endl;
+    cout << "Стек: " << stack << endl;
+    
+    auto copyStack = stack;
     cout << "Копия стека: " << copyStack.toString() << endl;
     
-    cout << "\nОбработка копии стека:" << endl;
-    stackProcessor(copyStack);
-    
-    cout << "\n=== Работа со строками и auto ===" << endl;
+    cout << "\n=== Работа со строками ===" << endl;
     auto stringStack = LimitedStack<string, 4>();
     
-    auto strings = {"Hello", "World", "from", "Stack"};
-    for (const auto& str : strings) {
+    for (const auto& str : {"Hello", "World", "from", "Stack"}) {
         stringStack.push(str);
     }
     
     cout << "Стек строк: " << stringStack << endl;
-    
-    auto processStringStack = [&stringStack]() -> decltype(stringStack.get()) {
-        if (!stringStack.isEmpty()) {
-            return stringStack.get();
-        }
-        return string();
-    };
-    
-    auto topString = processStringStack();
-    cout << "Верхняя строка (через лямбду): " << topString << endl;
-    
-    cout << "\n=== Использование вспомогательной функции ===" << endl;
-    printStackInfo(stringStack);
-    
-    cout << "\n=== Проверка типа через decltype ===" << endl;
-    cout << "Тип stringStack.get(): " << typeid(decltype(stringStack.get())).name() << endl;
-    cout << "Тип stringStack.isEmpty(): " << typeid(decltype(stringStack.isEmpty())).name() << endl;
-    cout << "Тип stringStack.size(): " << typeid(decltype(stringStack.size())).name() << endl;
+    cout << "Верхняя строка: " << stringStack.get() << endl;
     
     cout << "\n=== Ввод через поток ===" << endl;
     auto inputStack = LimitedStack<double, 3>();
@@ -238,13 +203,7 @@ int main() {
     cin >> inputStack;
     cout << "Результат: " << inputStack << endl;
     
-    if (!inputStack.isEmpty()) {
-        auto element = inputStack.get();
-        cout << "Тип элемента: " << typeid(decltype(element)).name() 
-             << ", значение: " << element << endl;
-    }
-    
-    cout << "\n=== Тест со сложным типом ===" << endl;
+    cout << "\n=== Тест с пользовательским типом ===" << endl;
     struct Point {
         int x, y;
         
