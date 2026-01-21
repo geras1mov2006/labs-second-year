@@ -1,0 +1,64 @@
+#include <iostream>
+#include <type_traits>
+#include <algorithm>
+using namespace std;
+
+template<typename T>
+constexpr auto gcd = [](T a, T b) constexpr {
+    static_assert(is_integral<T>::value, "Type must be integral");
+    
+    while (b != 0) {
+        T temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a < 0 ? -a : a;
+};
+
+template<typename T>
+constexpr auto lcm = [](T a, T b) constexpr {
+    static_assert(is_integral<T>::value, "Type must be integral");
+    
+    if (a == 0 && b == 0) return T{0};
+    
+    auto a_abs = a < 0 ? -a : a;
+    auto b_abs = b < 0 ? -b : b;
+    
+    auto g = gcd<T>(a_abs, b_abs);
+    return (a_abs / g) * b_abs;
+};
+
+int main() {
+    constexpr auto result1 = lcm<int>(12, 18);
+    constexpr auto result2 = lcm<long>(7, 5);
+    constexpr auto result3 = lcm<int>(21, 6);
+    constexpr auto result4 = lcm<int>(-15, 20);
+    constexpr auto result5 = lcm<int>(0, 5);
+    
+    static_assert(result1 == 36, "Тест 1 не пройден");
+    static_assert(result2 == 35, "Тест 2 не пройден");
+    static_assert(result3 == 42, "Тест 3 не пройден");
+    static_assert(result4 == 60, "Тест 4 не пройден");
+    static_assert(result5 == 0, "Тест 5 не пройден");
+    
+    cout << "НОК(12, 18) = " << result1 << endl;
+    cout << "НОК(7, 5) = " << result2 << endl;
+    cout << "НОК(21, 6) = " << result3 << endl;
+    cout << "НОК(-15, 20) = " << result4 << endl;
+    cout << "НОК(0, 5) = " << result5 << endl;
+    
+    constexpr auto result_long = lcm<long long>(123456789, 987654321);
+    cout << "НОК(123456789, 987654321) = " << result_long << endl;
+    
+    int x, y;
+    cout << "\nВведите два числа для вычисления НОК: ";
+    cin >> x >> y;
+    cout << "НОК(" << x << ", " << y << ") = " << lcm<int>(x, y) << endl;
+    
+    cout << "\nДополнительные тесты:" << endl;
+    cout << "НОК(8, 12) = " << lcm<int>(8, 12) << endl;
+    cout << "НОК(25, 15) = " << lcm<int>(25, 15) << endl;
+    cout << "НОК(100, 75) = " << lcm<int>(100, 75) << endl;
+    
+    return 0;
+}
