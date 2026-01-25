@@ -5,13 +5,13 @@
 
 using namespace std;
 
-class GeoExV1 {};
+// Собственные исключения
 
-class GeoExV2 {
+class GeoExV1 {};  // Пустой класс
+
+class GeoExV2 {     // Независимый класс с полями
 private:
-    double a0;
-    double r;
-    double an;
+    double a0, r, an;
     string msg;
     
 public:
@@ -24,11 +24,9 @@ public:
     double get_an() const { return an; }
 };
 
-class GeoExV3 : public invalid_argument {
+class GeoExV3 : public invalid_argument {  // Наследник от std::exception
 private:
-    double a0;
-    double r;
-    double an;
+    double a0, r, an;
     
 public:
     GeoExV3(double a0, double r, double an, const string& msg)
@@ -39,13 +37,57 @@ public:
     double get_an() const { return an; }
 };
 
-double geom_sum_v1(double a0, double r, double an) {
-    if (fabs(1 - r) < 1e-10) {
+// Вспомогательная проверка параметров
+void check_parameters(double a0, double r, double an) {
+    const double EPS = 1e-10;
+    
+    if (fabs(1 - r) < EPS) {
         throw runtime_error("Деление на ноль: знаменатель (1-r) равен нулю");
     }
     
     if (isnan(a0) || isnan(r) || isnan(an)) {
-        throw invalid_argument("Один или несколько параметров - NaN");
+        throw invalid_argument("Один или несколько параметров NaN");
+    }
+    
+    if (isinf(a0) || isinf(r) || isinf(an)) {
+        throw overflow_error("Один или несколько параметров бесконечны");
+    }
+    
+    double num = a0 - an * r;
+    double den = 1 - r;
+    
+    if (isinf(num) || isinf(den)) {
+        throw overflow_error("Переполнение при вычислениях");
+    }
+}
+
+// Вариант 1: Без спецификации исключений
+double geom_sum_no_spec(double a0, double r, double an) {
+    check_parameters(a0, r, an);
+    return (a0 - an * r) / (1 - r);
+}
+
+// Вариант 2: Со спецификацией throw() 
+double geom_sum_throw_empty(double a0, double r, double an) throw() {
+    if (fabs(1 - r) < 1e-10) {
+        throw runtime_error("Деление на ноль: знаменатель (1-r) равен нулю");
+    }
+    
+    return (a0 - an * r) / (1 - r);
+}
+
+// Вариант 3: С конкретной спецификацией стандартных исключений
+double geom_sum_standard_spec(double a0, double r, double an) 
+    throw(invalid_argument, runtime_error, overflow_error) {
+    
+    const double EPS = 1e-10;
+    
+    if (fabs(1 - r) < EPS) {
+        throw runtime_error("Деление на ноль: знаменатель (1-r) равен нулю");
+    }
+    
+    if (isnan(a0) || isnan(r) || isnan(an)) {
+        throw invalid_argument("Один или несколько параметров NaN");
     }
     
     if (isinf(a0) || isinf(r) || isinf(an)) {
@@ -62,82 +104,26 @@ double geom_sum_v1(double a0, double r, double an) {
     return num / den;
 }
 
-double geom_sum_v2(double a0, double r, double an) {
-    if (fabs(1 - r) < 1e-10) {
-        throw runtime_error("Деление на ноль: знаменатель (1-r) равен нулю");
-    }
+// Вариант 4a: Спецификация с пустым классом исключения
+double geom_sum_custom_spec_v1(double a0, double r, double an) 
+    throw(GeoExV1) {
     
-    if (isnan(a0) || isnan(r) || isnan(an)) {
-        throw invalid_argument("Один или несколько параметров - NaN");
-    }
-    
-    if (isinf(a0) || isinf(r) || isinf(an)) {
-        throw overflow_error("Один или несколько параметров бесконечны");
-    }
-    
-    double num = a0 - an * r;
-    double den = 1 - r;
-    
-    if (isinf(num) || isinf(den)) {
-        throw overflow_error("Переполнение при вычислениях");
-    }
-    
-    return num / den;
+    check_parameters(a0, r, an);
+    return (a0 - an * r) / (1 - r);
 }
 
-double geom_sum_v3(double a0, double r, double an) {
-    if (fabs(1 - r) < 1e-10) {
-        throw runtime_error("Деление на ноль: знаменатель (1-r) равен нулю");
-    }
+// Вариант 4b: Спецификация с классом исключения с полями
+double geom_sum_custom_spec_v2(double a0, double r, double an) 
+    throw(GeoExV2) {
     
-    if (isnan(a0) || isnan(r) || isnan(an)) {
-        throw invalid_argument("Один или несколько параметров - NaN");
-    }
+    const double EPS = 1e-10;
     
-    if (isinf(a0) || isinf(r) || isinf(an)) {
-        throw overflow_error("Один или несколько параметров бесконечны");
-    }
-    
-    double num = a0 - an * r;
-    double den = 1 - r;
-    
-    if (isinf(num) || isinf(den)) {
-        throw overflow_error("Переполнение при вычислениях");
-    }
-    
-    return num / den;
-}
-
-double geom_sum_v4a(double a0, double r, double an) {
-    if (fabs(1 - r) < 1e-10) {
-        throw GeoExV1();
-    }
-    
-    if (isnan(a0) || isnan(r) || isnan(an)) {
-        throw GeoExV1();
-    }
-    
-    if (isinf(a0) || isinf(r) || isinf(an)) {
-        throw GeoExV1();
-    }
-    
-    double num = a0 - an * r;
-    double den = 1 - r;
-    
-    if (isinf(num) || isinf(den)) {
-        throw GeoExV1();
-    }
-    
-    return num / den;
-}
-
-double geom_sum_v4b(double a0, double r, double an) {
-    if (fabs(1 - r) < 1e-10) {
+    if (fabs(1 - r) < EPS) {
         throw GeoExV2(a0, r, an, "Деление на ноль: знаменатель (1-r) равен нулю");
     }
     
     if (isnan(a0) || isnan(r) || isnan(an)) {
-        throw GeoExV2(a0, r, an, "Один или несколько параметров - NaN");
+        throw GeoExV2(a0, r, an, "Один или несколько параметров NaN");
     }
     
     if (isinf(a0) || isinf(r) || isinf(an)) {
@@ -154,13 +140,18 @@ double geom_sum_v4b(double a0, double r, double an) {
     return num / den;
 }
 
-double geom_sum_v4c(double a0, double r, double an) {
-    if (fabs(1 - r) < 1e-10) {
+// Вариант 4c: Спецификация с исключением-наследником от std::exception
+double geom_sum_custom_spec_v3(double a0, double r, double an) 
+    throw(GeoExV3) {
+    
+    const double EPS = 1e-10;
+    
+    if (fabs(1 - r) < EPS) {
         throw GeoExV3(a0, r, an, "Деление на ноль: знаменатель (1-r) равен нулю");
     }
     
     if (isnan(a0) || isnan(r) || isnan(an)) {
-        throw GeoExV3(a0, r, an, "Один или несколько параметров - NaN");
+        throw GeoExV3(a0, r, an, "Один или несколько параметров NaN");
     }
     
     if (isinf(a0) || isinf(r) || isinf(an)) {
@@ -178,218 +169,175 @@ double geom_sum_v4c(double a0, double r, double an) {
 }
 
 int main() {
-    cout << "=== Тестирование функции суммы геометрической прогрессии ===\n" << endl;
+    cout << "Тестирование функции суммы геометрической прогрессии\n" << endl;
     
     double a0_ok = 2.0, r_ok = 0.5, an_ok = 0.25;
     double a0_nan = NAN, r_nan = 0.5, an_nan = 0.25;
     double a0_inf = INFINITY, r_inf = 0.5, an_inf = 0.25;
     double a0_div0 = 2.0, r_div0 = 1.0, an_div0 = 1.0;
+    double a0_overflow = 1e308, r_overflow = 2.0, an_overflow = 1e308;
     
     double res;
     
-    cout << "1. geom_sum_v1:" << endl;
+    // Вариант 1: Без спецификации исключений
+    cout << "1. Вариант без спецификации исключений" << endl;
     
     try {
-        res = geom_sum_v1(a0_ok, r_ok, an_ok);
-        cout << "   Корректные данные: S = " << res << endl;
+        res = geom_sum_no_spec(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные Sn " << res << endl;
     }
     catch (const exception& e) {
-        cout << "   Ошибка: " << e.what() << endl;
-    }
-    
-    try {
-        res = geom_sum_v1(a0_div0, r_div0, an_div0);
-        cout << "   Деление на ноль: S = " << res << endl;
-    }
-    catch (const exception& e) {
-        cout << "   Ошибка деления на ноль: " << e.what() << endl;
+        cout << "   Ошибка " << e.what() << endl;
     }
     
     try {
-        res = geom_sum_v1(a0_nan, r_nan, an_nan);
-        cout << "   NaN параметр: S = " << res << endl;
+        res = geom_sum_no_spec(a0_div0, r_div0, an_div0);
+        cout << "   Деление на ноль Sn " << res << endl;
     }
     catch (const exception& e) {
-        cout << "   Ошибка NaN параметра: " << e.what() << endl;
+        cout << "   Перехвачено " << e.what() << endl;
     }
     
     cout << endl;
     
-    cout << "2. geom_sum_v2:" << endl;
+    // Вариант 2: Со спецификацией throw()
+    cout << "2. Вариант со спецификацией throw()" << endl;
+    cout << "   нарушение спецификации ведет к std::terminate()" << endl;
     
     try {
-        res = geom_sum_v2(a0_ok, r_ok, an_ok);
-        cout << "   Корректные данные: S = " << res << endl;
-    }
-    catch (const exception& e) {
-        cout << "   Ошибка: " << e.what() << endl;
-    }
-    
-    try {
-        res = geom_sum_v2(a0_div0, r_div0, an_div0);
-        cout << "   Деление на ноль: S = " << res << endl;
-    }
-    catch (const exception& e) {
-        cout << "   Ошибка деления на ноль: " << e.what() << endl;
-    }
-    
-    cout << endl;
-    
-    cout << "3. geom_sum_v3:" << endl;
-    
-    try {
-        res = geom_sum_v3(a0_ok, r_ok, an_ok);
-        cout << "   Корректные данные: S = " << res << endl;
-    }
-    catch (const invalid_argument& e) {
-        cout << "   Ошибка неверного аргумента: " << e.what() << endl;
-    }
-    catch (const overflow_error& e) {
-        cout << "   Ошибка переполнения: " << e.what() << endl;
-    }
-    catch (const runtime_error& e) {
-        cout << "   Ошибка времени выполнения: " << e.what() << endl;
+        res = geom_sum_throw_empty(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные Sn " << res << endl;
     }
     catch (...) {
-        cout << "   Неизвестная ошибка" << endl;
+        cout << "   Исключение перехвачено" << endl;
     }
     
+    cout << endl;
+    
+    // Вариант 3: С конкретной спецификацией
+    cout << "3. Вариант с конкретной спецификацией" << endl;
+    cout << "   throw(invalid_argument, runtime_error, overflow_error)" << endl;
+    
     try {
-        res = geom_sum_v3(a0_div0, r_div0, an_div0);
-        cout << "   Деление на ноль: S = " << res << endl;
+        res = geom_sum_standard_spec(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные Sn " << res << endl;
     }
     catch (const invalid_argument& e) {
-        cout << "   Ошибка неверного аргумента: " << e.what() << endl;
-    }
-    catch (const overflow_error& e) {
-        cout << "   Ошибка переполнения: " << e.what() << endl;
+        cout << "   invalid_argument " << e.what() << endl;
     }
     catch (const runtime_error& e) {
-        cout << "   Ошибка деления на ноль: " << e.what() << endl;
-    }
-    catch (...) {
-        cout << "   Неизвестная ошибка" << endl;
-    }
-    
-    try {
-        res = geom_sum_v3(a0_nan, r_nan, an_nan);
-        cout << "   NaN параметр: S = " << res << endl;
-    }
-    catch (const invalid_argument& e) {
-        cout << "   Ошибка NaN параметра: " << e.what() << endl;
+        cout << "   runtime_error " << e.what() << endl;
     }
     catch (const overflow_error& e) {
-        cout << "   Ошибка переполнения: " << e.what() << endl;
+        cout << "   overflow_error " << e.what() << endl;
+    }
+    
+    try {
+        res = geom_sum_standard_spec(a0_div0, r_div0, an_div0);
+        cout << "   Деление на ноль Sn " << res << endl;
+    }
+    catch (const invalid_argument& e) {
+        cout << "   invalid_argument " << e.what() << endl;
     }
     catch (const runtime_error& e) {
-        cout << "   Ошибка времени выполнения: " << e.what() << endl;
+        cout << "   runtime_error " << e.what() << endl;
     }
-    catch (...) {
-        cout << "   Неизвестная ошибка" << endl;
-    }
-    
-    cout << endl;
-    
-    cout << "4a. geom_sum_v4a:" << endl;
-    
-    try {
-        res = geom_sum_v4a(a0_ok, r_ok, an_ok);
-        cout << "   Корректные данные: S = " << res << endl;
-    }
-    catch (const GeoExV1& e) {
-        cout << "   Ошибка: GeoExV1 поймано" << endl;
-    }
-    
-    try {
-        res = geom_sum_v4a(a0_div0, r_div0, an_div0);
-        cout << "   Деление на ноль: S = " << res << endl;
-    }
-    catch (const GeoExV1& e) {
-        cout << "   Ошибка деления на ноль: GeoExV1 поймано" << endl;
+    catch (const overflow_error& e) {
+        cout << "   overflow_error " << e.what() << endl;
     }
     
     cout << endl;
     
-    cout << "4b. geom_sum_v4b:" << endl;
+    // Вариант 4a: Собственное исключение - пустой класс
+    cout << "4a. Собственное исключение пустой класс" << endl;
     
     try {
-        res = geom_sum_v4b(a0_ok, r_ok, an_ok);
-        cout << "   Корректные данные: S = " << res << endl;
+        res = geom_sum_custom_spec_v1(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные Sn " << res << endl;
     }
-    catch (const GeoExV2& e) {
-        cout << "   Ошибка: " << e.get_msg() 
-             << " (a0=" << e.get_a0() 
-             << ", r=" << e.get_r() 
-             << ", an=" << e.get_an() << ")" << endl;
-    }
-    
-    try {
-        res = geom_sum_v4b(a0_div0, r_div0, an_div0);
-        cout << "   Деление на ноль: S = " << res << endl;
-    }
-    catch (const GeoExV2& e) {
-        cout << "   Ошибка деления на ноль: " << e.get_msg() 
-             << " (a0=" << e.get_a0() 
-             << ", r=" << e.get_r() 
-             << ", an=" << e.get_an() << ")" << endl;
+    catch (const GeoExV1&) {
+        cout << "   Перехвачено GeoExV1" << endl;
     }
     
     try {
-        res = geom_sum_v4b(a0_inf, r_inf, an_inf);
-        cout << "   Бесконечный параметр: S = " << res << endl;
+        res = geom_sum_custom_spec_v1(a0_div0, r_div0, an_div0);
+        cout << "   Деление на ноль Sn " << res << endl;
     }
-    catch (const GeoExV2& e) {
-        cout << "   Ошибка бесконечного параметра: " << e.get_msg() 
-             << " (a0=" << e.get_a0() 
-             << ", r=" << e.get_r() 
-             << ", an=" << e.get_an() << ")" << endl;
+    catch (const GeoExV1&) {
+        cout << "   Перехвачено GeoExV1 при делении на ноль" << endl;
     }
     
     cout << endl;
     
-    cout << "4c. geom_sum_v4c:" << endl;
+    // Вариант 4b: Собственное исключение - класс с полями
+    cout << "4b. Собственное исключение класс с полями" << endl;
     
     try {
-        res = geom_sum_v4c(a0_ok, r_ok, an_ok);
-        cout << "   Корректные данные: S = " << res << endl;
+        res = geom_sum_custom_spec_v2(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные Sn " << res << endl;
     }
-    catch (const GeoExV3& e) {
-        cout << "   Ошибка: " << e.what() 
-             << " (a0=" << e.get_a0() 
-             << ", r=" << e.get_r() 
-             << ", an=" << e.get_an() << ")" << endl;
-    }
-    catch (const invalid_argument& e) {
-        cout << "   Ошибка неверного аргумента: " << e.what() << endl;
-    }
-    
-    try {
-        res = geom_sum_v4c(a0_div0, r_div0, an_div0);
-        cout << "   Деление на ноль: S = " << res << endl;
-    }
-    catch (const GeoExV3& e) {
-        cout << "   Ошибка деления на ноль: " << e.what() 
-             << " (a0=" << e.get_a0() 
-             << ", r=" << e.get_r() 
-             << ", an=" << e.get_an() << ")" << endl;
-    }
-    catch (const invalid_argument& e) {
-        cout << "   Ошибка неверного аргумента: " << e.what() << endl;
+    catch (const GeoExV2& e) {
+        cout << "   Ошибка " << e.get_msg() 
+             << " a0 " << e.get_a0() 
+             << " r " << e.get_r() 
+             << " an " << e.get_an() << endl;
     }
     
     try {
-        res = geom_sum_v4c(a0_nan, r_nan, an_nan);
-        cout << "   NaN параметр: S = " << res << endl;
+        res = geom_sum_custom_spec_v2(a0_div0, r_div0, an_div0);
+        cout << "   Деление на ноль Sn " << res << endl;
+    }
+    catch (const GeoExV2& e) {
+        cout << "   Ошибка деления на ноль " << e.get_msg() 
+             << " a0 " << e.get_a0() 
+             << " r " << e.get_r() 
+             << " an " << e.get_an() << endl;
+    }
+    
+    cout << endl;
+    
+    // Вариант 4c: Собственное исключение - наследник от std::exception
+    cout << "4c. Собственное исключение наследник от std::exception" << endl;
+    
+    try {
+        res = geom_sum_custom_spec_v3(a0_ok, r_ok, an_ok);
+        cout << "   Корректные данные Sn " << res << endl;
     }
     catch (const GeoExV3& e) {
-        cout << "   Ошибка NaN параметра: " << e.what() 
-             << " (a0=" << e.get_a0() 
-             << ", r=" << e.get_r() 
-             << ", an=" << e.get_an() << ")" << endl;
+        cout << "   GeoExV3 " << e.what() 
+             << " a0 " << e.get_a0() 
+             << " r " << e.get_r() 
+             << " an " << e.get_an() << endl;
     }
-    catch (const invalid_argument& e) {
-        cout << "   Ошибка неверного аргумента: " << e.what() << endl;
+    catch (const exception& e) {
+        cout << "   Стандартное исключение " << e.what() << endl;
     }
+    
+    try {
+        res = geom_sum_custom_spec_v3(a0_nan, r_nan, an_nan);
+        cout << "   NaN параметр Sn " << res << endl;
+    }
+    catch (const GeoExV3& e) {
+        cout << "   GeoExV3 " << e.what() 
+             << " a0 " << e.get_a0() 
+             << " r " << e.get_r() 
+             << " an " << e.get_an() << endl;
+    }
+    catch (const exception& e) {
+        cout << "   Стандартное исключение " << e.what() << endl;
+    }
+    
+    // Демонстрация полиморфизма
+    cout << "\n   Демонстрация полиморфизма catch по exception&" << endl;
+    try {
+        res = geom_sum_custom_spec_v3(a0_inf, r_inf, an_inf);
+        cout << "   Бесконечный параметр Sn " << res << endl;
+    }
+    catch (const exception& e) {
+        cout << "   Поймано через exception& " << e.what() << endl;
+    }
+    
+    cout << "\nТестирование завершено" << endl;
     
     return 0;
 }
